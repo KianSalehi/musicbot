@@ -3,7 +3,7 @@ const{prefix,
 token}=require("./config.json");
 const ytdl = require("ytdl-core");
 const client = new Discord.Client();
-client.login(process.env.BOT_TOKEN);
+client.login(token);
 const queue = new Map();
 
 client.once("ready", () => {
