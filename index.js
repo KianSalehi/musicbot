@@ -135,3 +135,4 @@ function list(message, serverQueue){
         message.channel.send((i)+" - "+serverQueue.songs[i].title+"\n")
     return;
 }
+client.login(process.env.BOT_TOKEN);
