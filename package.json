@@ -1,0 +1,25 @@
+{
+  "name": "musicbot",
+  "version": "1.0.0",
+  "description": "A discord music bot made by KCGS memebers",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Kian Salehi",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "\u0016https://github.com/KianSalehi/musicbot.git"
+  },
+  "dependencies": {
+    "@discordjs/opus": "^0.3.2",
+    "discord.js": "^12.3.1",
+    "ffmpeg": "0.0.4",
+    "ffmpeg-static": "^4.2.7",
+    "fluent-ffmpeg": "^2.1.2",
+    "yt-search": "^2.3.2",
+    "ytdl-core": "^3.3.0"
+  }
+}
