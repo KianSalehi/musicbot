@@ -6,8 +6,13 @@ A discord bot made with NodeJS and Javascript to play music in discord servers.
 
 Clone the repository and with the use of terminal or command line execute:
 ```
+npm init
+```
+and follow the instructions, and then execute:
+```
 node index.js
 ```
+to start the bot.
 
 ## Dependencies
 
