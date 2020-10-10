@@ -3,6 +3,7 @@ const{prefix,
 token}=require("./config.json");
 const ytdl = require("ytdl-core");
 const client = new Discord.Client();
+client.login(process.env.BOT_TOKEN);
 const queue = new Map();
 
 client.once("ready", () => {
@@ -134,4 +135,4 @@ function list(message, serverQueue){
         message.channel.send((i)+" - "+serverQueue.songs[i].title+"\n")
     return;
 }
-client.login(process.env.BOT_TOKEN);
+
