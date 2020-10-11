@@ -1,8 +1,8 @@
 const Discord = require("discord.js");
-const{prefix,
-token}=require("./config.json");
+const{prefix, token}=require("./config.json");
 const ytdl = require("ytdl-core");
 const client = new Discord.Client();
+// Login for the bot
 client.login(token);
 const queue = new Map();
 
@@ -18,27 +18,30 @@ client.once("disconnect", ()=>{
     console.log("Disconnect!");
 });
 
+// Listener
 client.on('message', async message =>{
+    // If the message is from the bot
     if (message.author.bot) return;
     if (!message.content.startsWith(prefix)) return;
     const serverQueue = queue.get(message.guild.id);
-    //Add a song to a queue
+    // Add a song to a queue
     if (message.content.startsWith(`${prefix}play`)){
-        execute(message, serverQueue);
-        return;
+        await execute(message, serverQueue);
     }// Skip a song
     else if (message.content.startsWith(`${prefix}skip`)){
         skip(message,serverQueue);
-        return;
-    }//Stop the songs
+    }// Stop the songs
     else if (message.content.startsWith(`${prefix}stop`)){
         stop(message,serverQueue);
-        return;
-    }//Lists the songs
+    }// Lists the songs
     else if (message.content.startsWith(`${prefix}list`)){
         list(message,serverQueue);
-        return;
-    }//If the command is wrong
+    }
+    //Delete the last x messages
+    else if (message.content.startsWith(`${prefix}delete`))
+    {
+        deleteMessage(message);
+    }// If the command is wrong
     else{
         message.channel.send("YOU DUMB FUCK, READ THE MANUAL STUPID!!");
     }
@@ -78,8 +81,7 @@ async function execute (message,serverQueue){
         queueContruct.songs.push(song);
         try{
             // try to join the voicechat and save our connection in the object
-            var connection = await voiceChannel.join();
-            queueContruct.connection = connection;
+            queueContruct.connection = await voiceChannel.join();
             // Calling the play function to start a song
             play(message.guild, queueContruct.songs[0]);
         } catch (err){
@@ -131,8 +133,18 @@ function stop(message, serverQueue){
 }
 
 function list(message, serverQueue){
-    for(i=0;i<serverQueue.songs.length;i++)
+    for(let i=0;i<serverQueue.songs.length;i++)
         message.channel.send((i)+" - "+serverQueue.songs[i].title+"\n")
-    return;
 }
 
+function deleteMessage(message){
+    const args = message.content.split(" ");
+    const textChannel = message.channel;
+    const permission=textChannel.permissionsFor(message.client.user);
+    if (!permission.has("MANAGE_MESSAGES")){
+        message.channel.send("I do not have permission to manage the messages")
+    }
+    const toDelete = parseInt(args[1])+1;
+    textChannel.bulkDelete(toDelete);
+    message.channel.send(`Deleted ${toDelete-1} messages!!`);
+}
