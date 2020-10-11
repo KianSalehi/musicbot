@@ -43,7 +43,7 @@ client.on('message', async message =>{
         deleteMessage(message);
     }// If the command is wrong
     else{
-        message.channel.send("YOU DUMB FUCK, READ THE MANUAL STUPID!!");
+        message.channel.send("Oh man, looks like you need to read the manual!! You can find the manual my github repository!");
     }
 
 });
