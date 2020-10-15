@@ -105,7 +105,7 @@ function play (guild, song){
         return;
     }
     const dispatcher = serverQueue.connection
-        .play(ytdl(song.url))
+        .play(ytdl(song.url, {quality: 'highestaudio', highWaterMark: 1 << 25 }))
         .on("finish",() =>{
         serverQueue.songs.shift();
         play(guild, serverQueue.songs[0]);
@@ -144,7 +144,8 @@ function deleteMessage(message){
     if (!permission.has("MANAGE_MESSAGES")){
         message.channel.send("I do not have permission to manage the messages")
     }
+    const userName=message.author.username
     const toDelete = parseInt(args[1])+1;
     textChannel.bulkDelete(toDelete);
-    message.channel.send(`Deleted ${toDelete-1} messages!!`);
+    message.channel.send(`${userName} Deleted ${toDelete-1} messages!!`);
 }
