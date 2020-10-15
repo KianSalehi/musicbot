@@ -22,6 +22,7 @@ client.once("disconnect", ()=>{
 client.on('message', async message =>{
     // If the message is from the bot
     if (message.author.bot) return;
+    if (message.content.startsWith(`${prefix};`)) return;
     if (!message.content.startsWith(prefix)) return;
     const serverQueue = queue.get(message.guild.id);
     // Add a song to a queue
@@ -43,7 +44,7 @@ client.on('message', async message =>{
         deleteMessage(message);
     }// If the command is wrong
     else{
-        message.channel.send("Oh man, looks like you need to read the manual!! You can find the manual my github repository!");
+        message.channel.send("Please check the manual on the github repository!!"+"https://github.com/KianSalehi/musicbot");
     }
 
 });
@@ -107,9 +108,9 @@ function play (guild, song){
     const dispatcher = serverQueue.connection
         .play(ytdl(song.url, {quality: 'highestaudio', highWaterMark: 1 << 25 }))
         .on("finish",() =>{
-        serverQueue.songs.shift();
-        play(guild, serverQueue.songs[0]);
-    })
+            serverQueue.songs.shift();
+            play(guild, serverQueue.songs[0]);
+        })
         .on("error", error => console.error(error));
     dispatcher.setVolumeLogarithmic(serverQueue.volume/ 5);
     serverQueue.textChannel.send(`Start playing: **${song.title}**`);
