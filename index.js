@@ -21,30 +21,34 @@ client.once("disconnect", ()=>{
 // Listener
 client.on('message', async message =>{
     // If the message is from the bot
-    if (message.author.bot) return;
-    if (message.content.startsWith(`${prefix};`)) return;
-    if (!message.content.startsWith(prefix)) return;
-    const serverQueue = queue.get(message.guild.id);
-    // Add a song to a queue
-    if (message.content.startsWith(`${prefix}play`)){
-        await execute(message, serverQueue);
-    }// Skip a song
-    else if (message.content.startsWith(`${prefix}skip`)){
-        skip(message,serverQueue);
-    }// Stop the songs
-    else if (message.content.startsWith(`${prefix}stop`)){
-        stop(message,serverQueue);
-    }// Lists the songs
-    else if (message.content.startsWith(`${prefix}list`)){
-        list(message,serverQueue);
-    }
-    //Delete the last x messages
-    else if (message.content.startsWith(`${prefix}delete`))
-    {
-        deleteMessage(message);
-    }// If the command is wrong
-    else{
-        message.channel.send("Please check the manual on the github repository!!"+"https://github.com/KianSalehi/musicbot");
+    try{
+        if (message.author.bot) return;
+        if (message.content.startsWith(`${prefix};`)) return;
+        if (!message.content.startsWith(prefix)) return;
+        const serverQueue = queue.get(message.guild.id);
+        // Add a song to a queue
+        if (message.content.startsWith(`${prefix}play`)){
+            await execute(message, serverQueue).catch(e => { throw e });
+        }// Skip a song
+        else if (message.content.startsWith(`${prefix}skip`)){
+            skip(message,serverQueue);
+        }// Stop the songs
+        else if (message.content.startsWith(`${prefix}stop`)){
+            stop(message,serverQueue);
+        }// Lists the songs
+        else if (message.content.startsWith(`${prefix}list`)){
+            list(message,serverQueue);
+        }
+        //Delete the last x messages
+        else if (message.content.startsWith(`${prefix}delete`))
+        {
+            deleteMessage(message);
+        }// If the command is wrong
+        else{
+            message.channel.send("Please check the manual on the github repository!!"+"https://github.com/KianSalehi/musicbot");
+        }}
+    catch (err){
+        throw err;
     }
 
 });
@@ -122,20 +126,27 @@ function skip(message, serverQueue){
             "You have to be in a voice channel to skip the music!"
         );
     if (!serverQueue)
-        return  message.channel.send("There is no song to skip!");
+        return  message.channel.send("There are no songs in the queue to skip!");
     serverQueue.connection.dispatcher.end();
 }
 
 function stop(message, serverQueue){
     if(!message.member.voice.channel)
         return message.channel.send("You have to be in a voice channel to stop the music")
+    if(!serverQueue)
+        return message.channel.send("There are no songs in the queue to stop!")
     serverQueue.songs=[];
     serverQueue.connection.dispatcher.end();
 }
 
 function list(message, serverQueue){
-    for(let i=0;i<serverQueue.songs.length;i++)
-        message.channel.send((i)+" - "+serverQueue.songs[i].title+"\n")
+    if (!serverQueue){
+        return message.channel.send("There are no songs in the queue to list.");
+    }
+    else{
+        for(let i=0;i<serverQueue.songs.length;i++)
+            message.channel.send((i)+" - "+serverQueue.songs[i].title+"\n")
+    }
 }
 
 function deleteMessage(message){
