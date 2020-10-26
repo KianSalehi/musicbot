@@ -1,10 +1,16 @@
 const Discord = require("discord.js");
 const{prefix, token}=require("./config.json");
 const ytdl = require("ytdl-core");
+const {google}= require('googleapis');
+const {ytToken}=require("./ytconfig.json");
 const client = new Discord.Client();
 // Login for the bot
 client.login(token);
 const queue = new Map();
+const youtubeService=google.youtube({
+    version:'v3',
+    auth:'' //ytToken
+});
 
 client.once("ready", () => {
     console.log("Ready!");
@@ -28,7 +34,7 @@ client.on('message', async message =>{
         const serverQueue = queue.get(message.guild.id);
         // Add a song to a queue
         if (message.content.startsWith(`${prefix}play`)){
-            await execute(message, serverQueue).catch(e => { throw e });
+            await youtubeFinder(message, serverQueue, youtubeService).catch(e => { throw e });
         }// Skip a song
         else if (message.content.startsWith(`${prefix}skip`)){
             skip(message,serverQueue);
@@ -52,8 +58,29 @@ client.on('message', async message =>{
     }
 
 });
-async function execute (message,serverQueue){
+//function to find the url for song searched
+ async function youtubeFinder(message, serverQueue, youtubeService){
     const args= message.content.split(" ");
+    args.shift();
+    await youtubeService.search.list({
+        "part": [
+            "snippet"
+        ],
+        "maxResults": 1,
+        "q": `${args}`
+    })
+        .then(function(response) {
+                // Handle the results here (response.result has the parsed body).
+                const ytVideoId=response.data.items[0].id.videoId
+                let youtube_url = `https://www.youtube.com/watch?v=${ytVideoId}`
+                console.log("ID:",ytVideoId);
+                execute(message,serverQueue,youtube_url);
+
+            },
+            function(err) { console.error("Execute error", err); });
+
+}
+async function execute (message, serverQueue, youtube_url){
     const voiceChannel = message.member.voice.channel;
     if (!voiceChannel)
         return message.channel.send(
@@ -65,7 +92,8 @@ async function execute (message,serverQueue){
             "I need the permissions to join and speak in your voice channel!"
         );
     }
-    const songInfo = await ytdl.getInfo(args[1]);
+    console.log(youtube_url)
+    const songInfo = await ytdl.getInfo(youtube_url);
     const song = {
         title: songInfo.videoDetails.title,
         url: songInfo.videoDetails.video_url,
