@@ -18,14 +18,14 @@ to start the bot.
 
 ## Dependencies
 
-Discord.js, ytdl-core, and ffmpeg modules are required to run this bot
+Discord.js,googleapis, ytdl-core, and ffmpeg modules are required to run this bot
 
 ## Bot Manual
 
-To play a song, url of the youtube video is required:
+To play a song, url or name of the youtube video is required:
 
 ```
-;play url
+;play url||name
 ```
 
 To stop the bot:
