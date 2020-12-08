@@ -55,5 +55,5 @@ To delete messages in a channel:
 To remove a song from the list of songs:
 
 ```
-;remove [number that the song is listed as]
+;remove *number that the song is listed as*
 ```
