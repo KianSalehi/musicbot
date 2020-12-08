@@ -2,7 +2,6 @@ const Discord = require("discord.js");
 const{prefix, token}=require("./config.json");
 const ytdl = require("ytdl-core");
 const {google}= require('googleapis');
-const {ytToken}=require("./ytconfig.json");
 const client = new Discord.Client();
 // Login for the bot
 client.login(token);
@@ -24,7 +23,7 @@ client.once("disconnect", ()=>{
     console.log("Disconnect!");
 });
 
-// Listener
+
 client.on('message', async message =>{
     // If the message is from the bot
     try{
@@ -33,23 +32,28 @@ client.on('message', async message =>{
         if (!message.content.startsWith(prefix)) return;
         const serverQueue = queue.get(message.guild.id);
         // Add a song to a queue
-        if (message.content.startsWith(`${prefix}play`)){
+        if (message.content.toLowerCase().startsWith(`${prefix}play`)){
             await youtubeFinder(message, serverQueue, youtubeService).catch(e => { throw e });
         }// Skip a song
-        else if (message.content.startsWith(`${prefix}skip`)){
+        else if (message.content.toLowerCase().startsWith(`${prefix}skip`)){
             skip(message,serverQueue);
         }// Stop the songs
-        else if (message.content.startsWith(`${prefix}stop`)){
+        else if (message.content.toLowerCase().startsWith(`${prefix}stop`)){
             stop(message,serverQueue);
         }// Lists the songs
-        else if (message.content.startsWith(`${prefix}list`)){
+        else if (message.content.toLowerCase().startsWith(`${prefix}list`)){
             list(message,serverQueue);
         }
         //Delete the last x messages
-        else if (message.content.startsWith(`${prefix}delete`))
+        else if (message.content.toLowerCase().startsWith(`${prefix}delete`))
         {
             deleteMessage(message);
-        }// If the command is wrong
+        }
+        // Skip a specific item in the list
+        else if (message.content.toLowerCase().startsWith(`${prefix}remove`)){
+            cancelSpecificSong(message,serverQueue);
+        }
+        // If the command is wrong
         else{
             message.channel.send("Please check the manual on the github repository!!"+"https://github.com/KianSalehi/musicbot");
         }}
@@ -62,6 +66,10 @@ client.on('message', async message =>{
  async function youtubeFinder(message, serverQueue, youtubeService){
     const args= message.content.split(" ");
     args.shift();
+    if (args == ""){
+        message.channel.send("Please enter the url or name of the song and artist.");
+        message.channel.send("Check the manual on the github repository!!"+"https://github.com/KianSalehi/musicbot");
+        return;}
     await youtubeService.search.list({
         "part": [
             "snippet"
@@ -129,7 +137,7 @@ async function execute (message, serverQueue, youtube_url){
         return message.channel.send(`${song.title} has been added to the queue!`);
     }
 }
-
+// Function to play a song
 function play (guild, song){
     const serverQueue = queue.get(guild.id);
     if (!song){
@@ -147,7 +155,7 @@ function play (guild, song){
     dispatcher.setVolumeLogarithmic(serverQueue.volume/ 5);
     serverQueue.textChannel.send(`Start playing: **${song.title}**`);
 }
-
+// Function to skip a song
 function skip(message, serverQueue){
     if(!message.member.voice.channel)
         return message.channel.send(
@@ -157,7 +165,7 @@ function skip(message, serverQueue){
         return  message.channel.send("There are no songs in the queue to skip!");
     serverQueue.connection.dispatcher.end();
 }
-
+// Function to stop the bot
 function stop(message, serverQueue){
     if(!message.member.voice.channel)
         return message.channel.send("You have to be in a voice channel to stop the music")
@@ -167,16 +175,18 @@ function stop(message, serverQueue){
     serverQueue.connection.dispatcher.end();
 }
 
+//Function to list the songs in queue
 function list(message, serverQueue){
     if (!serverQueue){
         return message.channel.send("There are no songs in the queue to list.");
     }
     else{
-        for(let i=0;i<serverQueue.songs.length;i++)
+        message.channel.send("Playing: "+serverQueue.songs[0].title);
+        for(let i=1;i<serverQueue.songs.length;i++)
             message.channel.send((i)+" - "+serverQueue.songs[i].title+"\n")
     }
 }
-
+// Function to delete messages
 function deleteMessage(message){
     const args = message.content.split(" ");
     const textChannel = message.channel;
@@ -188,4 +198,24 @@ function deleteMessage(message){
     const toDelete = parseInt(args[1])+1;
     textChannel.bulkDelete(toDelete);
     message.channel.send(`${userName} Deleted ${toDelete-1} messages!!`);
+}
+// Function to cancel a specific song in the queue
+function cancelSpecificSong(message,serverQueue){
+     const args = message.content.split(" ");
+     const songToRemove = args [1];
+     const textChannel = message.channel;
+     if (!message.member.voice.channel){
+         return message.channel.send("You have to be in a voice channel to stop the music")
+     }
+    if(!serverQueue)
+        return message.channel.send("There are no songs to remove!")
+    else{
+        try {
+            message.channel.send("Removed: "+serverQueue.songs[songToRemove].title);
+            serverQueue.songs.splice(songToRemove,1)
+        }
+        catch (e) {
+            textChannel.send("Could not remove the song from the list!")
+        }
+    }
 }
