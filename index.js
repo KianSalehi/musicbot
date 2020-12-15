@@ -22,8 +22,22 @@ client.once("reconnecting",() => {
 client.once("disconnect", ()=>{
     console.log("Disconnect!");
 });
+// Listener to reset the queue if the bot gets disconnected from the voice channel
+client.on('voiceStateUpdate', async (oldState,newState)=>{
+    try {
+        if (!newState.member.user.bot)return;
+        if (newState.connection==null){
+            await queue.delete(oldState.guild.id);
+            return;
+        };
+        if (newState.connection.status==2)return;
 
-
+    }catch (e) {
+        throw e;
+    }
+    return;
+});
+// Listener to the messages sent in the servers
 client.on('message', async message =>{
     // If the message is from the bot
     try{
