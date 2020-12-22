@@ -251,9 +251,10 @@ function list(message, serverQueue){
         return message.channel.send("There are no songs in the queue to list.");
     }
     else{
-        message.channel.send("Playing: "+serverQueue.songs[0].title);
+        let playList = "Playing: "+serverQueue.songs[0].title+"\n";
         for(let i=1;i<serverQueue.songs.length;i++)
-            message.channel.send((i)+" - "+serverQueue.songs[i].title+"\n")
+            playList = playList+(i)+" - "+serverQueue.songs[i].title+"\n";
+        message.channel.send(playList);
     }
 }
 // Function to delete messages
