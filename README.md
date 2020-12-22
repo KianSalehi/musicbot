@@ -28,6 +28,16 @@ To play a song, url or name of the youtube video is required:
 ;play url||name
 ```
 
+To search for a song and get options to choose from:
+
+```
+;oplay name
+
+a list of songs will be returned to choose from. Songs are indicated with a number.
+
+;o (number)
+```
+
 To stop the bot:
 
 ```
@@ -57,3 +67,4 @@ To remove a song from the list of songs:
 ```
 ;remove *number that the song is listed as*
 ```
+
