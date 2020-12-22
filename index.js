@@ -44,13 +44,14 @@ client.on('message', async message =>{
         if (message.author.bot) return;
         if (message.content.startsWith(`${prefix};`)) return;
         if (!message.content.startsWith(prefix)) return;
+        if (message.content.toLowerCase().startsWith(`${prefix}o`) && !message.content.toLowerCase().includes(`${prefix}oplay`)) return;
         const serverQueue = queue.get(message.guild.id);
         // Add a song to a queue
         if (message.content.toLowerCase().startsWith(`${prefix}play`)){
             await youtubeFinder(message, serverQueue, youtubeService).catch(e => { throw e });
         }// Option play
         else if (message.content.toLowerCase().startsWith(`${prefix}oplay`)){
-            await optionFinder(message, serverQueue, youtubeService).catch(e=>{throw e});
+            await optionFinder(message, serverQueue, youtubeService);
         }// Skip a song
         else if (message.content.toLowerCase().startsWith(`${prefix}skip`)){
             skip(message,serverQueue);
@@ -81,13 +82,13 @@ client.on('message', async message =>{
 });
 // Function to find the options to play from Youtube
 async function optionFinder (message, serverQueue, youtubeService){
-    const args = message.content.message.split(" ");
+    const args = message.content.split(" ");
     args.shift();
     if (args == ""){
         message.channel.send("Please enter the url or name of the song and artist.");
         message.channel.send("Check the manual on the github repository!!"+"https://github.com/KianSalehi/musicbot");
         return;}
-    await  youtubeService.search.list({
+    await youtubeService.search.list({
         "part":[
             "snippet"
         ],
@@ -95,33 +96,40 @@ async function optionFinder (message, serverQueue, youtubeService){
         "q": `${args}`
     }).then(function(response){
         // Handle the results here (response.result has the parsed body).
+        let songs = "Songs Found on Youtube: \n"
         message.channel.send("Songs Found on Youtube: ");
-        for (let i=0;i<5;i++){
-            message.channel.send(i+"- "+response.data.items[i].title);
+        for (let i=0;i<4;i++){
+            songs = songs + ((i+1)+"- "+response.data.items[i].snippet.title+"\n");
         }
-        client.on("message", async message=>{
+        message.channel.send(songs);
+        client.on("message", message1=>{
             try {
-                if (message.author.bot) return;
-                if (message.content.startsWith(`${prefix};`)) return;
-                if (!message.content.startsWith(prefix)) return;
-                if (message.content.toLowerCase().startWith(`${prefix}oplay`)){
-                    const args1 = message.content.message.split(" ");
+                if (message1.author.bot) return;
+                const serverQueue1 = queue.get(message.guild.id);
+                if (message1.content.startsWith(`${prefix};`)) return;
+                if (!message1.content.startsWith(prefix)) return;
+                if (message1.content.toLowerCase().startsWith(`${prefix}o`) && !message1.content.toLowerCase().includes(`${prefix}oplay`)){
+                    let args1 = message1.content.split(" ");
                     args1.shift();
                     if (args1 == ""){
-                        message.channel.send("Please enter the url or name of the song and artist.");
-                        message.channel.send("Check the manual on the github repository!!"+"https://github.com/KianSalehi/musicbot");
+                        message1.channel.send("Please enter the url or name of the song and artist.");
+                        message1.channel.send("Check the manual on the github repository!!"+"https://github.com/KianSalehi/musicbot");
                         return;}
-                    const ytVideoId = response.data.items[args1].id.videoId;
+                    if (response == null)return;
+                    let ytVideoId = response.data.items[(parseInt(args1[0])-1)].id.videoId;
                     let youtube_url = `https://www.youtube.com/watch?v=${ytVideoId}`
-                    console.log("ID:", ytVideoId);
-                    execute(message, serverQueue, youtube_url);
+                    response = null;
+                    execute(message1, serverQueue1, youtube_url);
                 }
+
             }catch (e){
                 throw e;
             }
         });
+        execute(message1, serverQueue1, youtube_url);
+        client.off("message",message1=>{});
     },function(err) { console.error("Execute error", err); });
-    }
+    return;}
 
 
 //function to find the url for song searched
