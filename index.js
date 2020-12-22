@@ -48,6 +48,9 @@ client.on('message', async message =>{
         // Add a song to a queue
         if (message.content.toLowerCase().startsWith(`${prefix}play`)){
             await youtubeFinder(message, serverQueue, youtubeService).catch(e => { throw e });
+        }// Option play
+        else if (message.content.toLowerCase().startsWith(`${prefix}oplay`)){
+            await optionFinder(message, serverQueue, youtubeService).catch(e=>{throw e});
         }// Skip a song
         else if (message.content.toLowerCase().startsWith(`${prefix}skip`)){
             skip(message,serverQueue);
@@ -76,6 +79,51 @@ client.on('message', async message =>{
     }
 
 });
+// Function to find the options to play from Youtube
+async function optionFinder (message, serverQueue, youtubeService){
+    const args = message.content.message.split(" ");
+    args.shift();
+    if (args == ""){
+        message.channel.send("Please enter the url or name of the song and artist.");
+        message.channel.send("Check the manual on the github repository!!"+"https://github.com/KianSalehi/musicbot");
+        return;}
+    await  youtubeService.search.list({
+        "part":[
+            "snippet"
+        ],
+        "maxResults":5,
+        "q": `${args}`
+    }).then(function(response){
+        // Handle the results here (response.result has the parsed body).
+        message.channel.send("Songs Found on Youtube: ");
+        for (let i=0;i<5;i++){
+            message.channel.send(i+"- "+response.data.items[i].title);
+        }
+        client.on("message", async message=>{
+            try {
+                if (message.author.bot) return;
+                if (message.content.startsWith(`${prefix};`)) return;
+                if (!message.content.startsWith(prefix)) return;
+                if (message.content.toLowerCase().startWith(`${prefix}oplay`)){
+                    const args1 = message.content.message.split(" ");
+                    args1.shift();
+                    if (args1 == ""){
+                        message.channel.send("Please enter the url or name of the song and artist.");
+                        message.channel.send("Check the manual on the github repository!!"+"https://github.com/KianSalehi/musicbot");
+                        return;}
+                    const ytVideoId = response.data.items[args1].id.videoId;
+                    let youtube_url = `https://www.youtube.com/watch?v=${ytVideoId}`
+                    console.log("ID:", ytVideoId);
+                    execute(message, serverQueue, youtube_url);
+                }
+            }catch (e){
+                throw e;
+            }
+        });
+    },function(err) { console.error("Execute error", err); });
+    }
+
+
 //function to find the url for song searched
  async function youtubeFinder(message, serverQueue, youtubeService){
     const args= message.content.split(" ");
