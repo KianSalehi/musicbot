@@ -6,6 +6,15 @@ const client = new Discord.Client();
 // Login for the bot
 client.login(token);
 const queue = new Map();
+
+// Emojis
+const ePlaying= ":fire:  ";
+const eNext = ":small_orange_diamond:  ";
+const eFoundResult =":large_orange_diamond:  ";
+const eAttention=":exclamation:  ";
+const eAdd = ":pushpin:  "
+
+//Youtube API
 const youtubeService=google.youtube({
     version:'v3',
     auth:'' //ytToken
@@ -73,7 +82,7 @@ client.on('message', async message =>{
         }
         // If the command is wrong
         else{
-            message.channel.send("Please check the manual on the github repository!!"+"https://github.com/KianSalehi/musicbot");
+            message.channel.send(`${eAttention}`+"Please check the manual on the github repository!!"+"https://github.com/KianSalehi/musicbot");
         }}
     catch (err){
         throw err;
@@ -85,7 +94,7 @@ async function optionFinder (message, serverQueue, youtubeService){
     const args = message.content.split(" ");
     args.shift();
     if (args == ""){
-        message.channel.send("Please enter the url or name of the song and artist.");
+        message.channel.send(`${eAttention}`+"Please enter the url or name of the song and artist.");
         message.channel.send("Check the manual on the github repository!!"+"https://github.com/KianSalehi/musicbot");
         return;}
     await youtubeService.search.list({
@@ -96,12 +105,14 @@ async function optionFinder (message, serverQueue, youtubeService){
         "q": `${args}`
     }).then(function(response){
         // Handle the results here (response.result has the parsed body).
-        let songs = "Songs Found on Youtube: \n"
-        message.channel.send("Songs Found on Youtube: ");
+        let songs = "\n"+`${eFoundResult}`+"Songs Found on Youtube: \n\n"
         for (let i=0;i<4;i++){
-            songs = songs + ((i+1)+"- "+response.data.items[i].snippet.title+"\n");
+            songs = songs +`${eNext}`+ ((i+1)+"- "+response.data.items[i].snippet.title+"\n\n");
         }
-        message.channel.send(songs);
+        songs=`${eAttention}`+songs+"\nPlease select the song by typing:\n ;o #number";
+        message.reply(songs).then(message=>{
+            message.delete({timeout:30000})
+        }).catch(console.error);
         client.on("message", message1=>{
             try {
                 if (message1.author.bot) return;
@@ -112,13 +123,14 @@ async function optionFinder (message, serverQueue, youtubeService){
                     let args1 = message1.content.split(" ");
                     args1.shift();
                     if (args1 == ""){
-                        message1.channel.send("Please enter the url or name of the song and artist.");
+                        message1.channel.send(`${eAttention}`+"Please enter the url or name of the song and artist.");
                         message1.channel.send("Check the manual on the github repository!!"+"https://github.com/KianSalehi/musicbot");
                         return;}
                     if (response == null)return;
                     let ytVideoId = response.data.items[(parseInt(args1[0])-1)].id.videoId;
                     let youtube_url = `https://www.youtube.com/watch?v=${ytVideoId}`
                     response = null;
+                    if (ytVideoId==undefined)return ;
                     execute(message1, serverQueue1, youtube_url);
                 }
 
@@ -137,7 +149,7 @@ async function optionFinder (message, serverQueue, youtubeService){
     const args= message.content.split(" ");
     args.shift();
     if (args == ""){
-        message.channel.send("Please enter the url or name of the song and artist.");
+        message.channel.send(`${eAttention}`+"Please enter the url or name of the song and artist.");
         message.channel.send("Check the manual on the github repository!!"+"https://github.com/KianSalehi/musicbot");
         return;}
     await youtubeService.search.list({
@@ -152,6 +164,7 @@ async function optionFinder (message, serverQueue, youtubeService){
                 const ytVideoId=response.data.items[0].id.videoId
                 let youtube_url = `https://www.youtube.com/watch?v=${ytVideoId}`
                 console.log("ID:",ytVideoId);
+                if (ytVideoId==undefined)return;
                 execute(message,serverQueue,youtube_url);
 
             },
@@ -162,12 +175,12 @@ async function execute (message, serverQueue, youtube_url){
     const voiceChannel = message.member.voice.channel;
     if (!voiceChannel)
         return message.channel.send(
-            "You need to be in a voice channel to play music!"
+            `${eAttention}`+"You need to be in a voice channel to play music!"
         );
     const permissions = voiceChannel.permissionsFor(message.client.user);
     if (!permissions.has("CONNECT")||!permissions.has("SPEAK")){
         return message.channel.send(
-            "I need the permissions to join and speak in your voice channel!"
+            `${eAttention}`+"I need the permissions to join and speak in your voice channel!"
         );
     }
     console.log(youtube_url)
@@ -204,7 +217,7 @@ async function execute (message, serverQueue, youtube_url){
     } else {
         serverQueue.songs.push(song);
         console.log(serverQueue.songs);
-        return message.channel.send(`${song.title} has been added to the queue!`);
+        return message.channel.send(`${eAdd}`+`${song.title} has been added to the queue!`);
     }
 }
 // Function to play a song
@@ -223,24 +236,24 @@ function play (guild, song){
         })
         .on("error", error => console.error(error));
     dispatcher.setVolumeLogarithmic(serverQueue.volume/ 5);
-    serverQueue.textChannel.send(`Start playing: **${song.title}**`);
+    serverQueue.textChannel.send(`${ePlaying}Start playing: **${song.title}**`);
 }
 // Function to skip a song
 function skip(message, serverQueue){
     if(!message.member.voice.channel)
         return message.channel.send(
-            "You have to be in a voice channel to skip the music!"
+            `${eAttention}`+"You have to be in a voice channel to skip the music!"
         );
     if (!serverQueue)
-        return  message.channel.send("There are no songs in the queue to skip!");
+        return  message.channel.send(`${eAttention}`+"There are no songs in the queue to skip!");
     serverQueue.connection.dispatcher.end();
 }
 // Function to stop the bot
 function stop(message, serverQueue){
     if(!message.member.voice.channel)
-        return message.channel.send("You have to be in a voice channel to stop the music")
+        return message.channel.send(`${eAttention}`+"You have to be in a voice channel to stop the music")
     if(!serverQueue)
-        return message.channel.send("There are no songs in the queue to stop!")
+        return message.channel.send(`${eAttention}`+"There are no songs in the queue to stop!")
     serverQueue.songs=[];
     serverQueue.connection.dispatcher.end();
 }
@@ -248,12 +261,12 @@ function stop(message, serverQueue){
 //Function to list the songs in queue
 function list(message, serverQueue){
     if (!serverQueue){
-        return message.channel.send("There are no songs in the queue to list.");
+        return message.channel.send(`${eAttention}`+"There are no songs in the queue to list.");
     }
     else{
-        let playList = "Playing: "+serverQueue.songs[0].title+"\n";
+        let playList = `${ePlaying} Playing: `+serverQueue.songs[0].title+"\n";
         for(let i=1;i<serverQueue.songs.length;i++)
-            playList = playList+(i)+" - "+serverQueue.songs[i].title+"\n";
+            playList = playList+`${eNext}`+(i)+" - "+serverQueue.songs[i].title+"\n";
         message.channel.send(playList);
     }
 }
@@ -263,7 +276,7 @@ function deleteMessage(message){
     const textChannel = message.channel;
     const permission=textChannel.permissionsFor(message.client.user);
     if (!permission.has("MANAGE_MESSAGES")){
-        message.channel.send("I do not have permission to manage the messages")
+        message.channel.send(`${eAttention}`+"I do not have permission to manage the messages")
     }
     const userName=message.author.username
     const toDelete = parseInt(args[1])+1;
@@ -276,17 +289,17 @@ function cancelSpecificSong(message,serverQueue){
      const songToRemove = args [1];
      const textChannel = message.channel;
      if (!message.member.voice.channel){
-         return message.channel.send("You have to be in a voice channel to stop the music")
+         return message.channel.send(`${eAttention}`+"You have to be in a voice channel to stop the music")
      }
     if(!serverQueue)
-        return message.channel.send("There are no songs to remove!")
+        return message.channel.send(`${eAttention}`+"There are no songs to remove!")
     else{
         try {
-            message.channel.send("Removed: "+serverQueue.songs[songToRemove].title);
+            message.channel.send(`${eAttention}`+"Removed: "+serverQueue.songs[songToRemove].title);
             serverQueue.songs.splice(songToRemove,1)
         }
         catch (e) {
-            textChannel.send("Could not remove the song from the list!")
+            textChannel.send(`${eAttention}`+"Could not remove the song from the list!")
         }
     }
 }
