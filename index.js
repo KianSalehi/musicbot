@@ -164,6 +164,10 @@ async function youtubeFinder(message, serverQueue, youtubeService) {
     if (args[0].includes("list=")) {
         let playlistId=args[0].split("list=");
         playlistId = playlistId[1];
+        if (playlistId.includes("&")){
+            playlistId=playlistId.split("&");
+            playlistId=playlistId[0];
+        }
         await youtubeService.playlistItems.list({
             "part":[
                 "snippet"
