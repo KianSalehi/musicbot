@@ -1,6 +1,7 @@
 
 # musicbot
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/kiansalehi/musicbot/build)](https://github.com/KianSalehi/musicbot/actions?query=workflow%3Abuild)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/kiansalehi/musicbot/build)](https://github.com/KianSalehi/musicbot/actions?query=workflow%3Abuild) 
+[![GitHub](https://img.shields.io/github/license/kiansalehi/musicbot)](https://github.com/KianSalehi/musicbot/blob/main/LICENSE)
 
 A discord bot made with NodeJS and Javascript to play music in discord servers.
 
