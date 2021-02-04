@@ -5,7 +5,6 @@
 
 A discord bot made with NodeJS and Javascript to play music in discord servers.
 
-Update: New functionality added:
 
 ## Use
 
